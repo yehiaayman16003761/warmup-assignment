@@ -1,4 +1,5 @@
 const fs = require("fs");
+const { start } = require("repl");
 
 // ============================================================
 // Function 1: getShiftDuration(startTime, endTime)
@@ -6,9 +7,36 @@ const fs = require("fs");
 // endTime: (typeof string) formatted as hh:mm:ss am or hh:mm:ss pm
 // Returns: string formatted as h:mm:ss
 // ============================================================
-function getShiftDuration(startTime, endTime) {
-    // TODO: Implement this function
+function toseconds(time){
+   let [clock,period] = time.split(" ");
+   let [h,m,s] = clock.split(":").map(Number);
+
+   if(period=="pm" && h!==12) h+=12;
+   if(period=="am" && h==12) h=0;
+
+   return h*3600 + m*60 + s;
 }
+function getShiftDuration(startTime, endTime) {
+   function toseconds(time){
+   let [clock,period] = time.split(" ");
+   let[h,m,s] = clock.split(":").map(Number);
+   
+   if(period=="pm" && h!==12 ) 
+    h+=12;
+   if(period=="am" && h == 12)
+    h=0;
+return h*3600 + m*60 + s;
+   }
+let shiftDiff = toseconds(endTime) - toseconds(startTime);
+if(shiftDiff < 0){
+   shiftDiff += 24 * 3600;
+}
+let h = Math.floor(shiftDiff/3600);
+let m = Math.floor(shiftDiff%3600/60);
+let s = Math.floor(shiftDiff%60);
+return `${h}:${m}:${s}`;
+}
+
 
 // ============================================================
 // Function 2: getIdleTime(startTime, endTime)
@@ -17,7 +45,21 @@ function getShiftDuration(startTime, endTime) {
 // Returns: string formatted as h:mm:ss
 // ============================================================
 function getIdleTime(startTime, endTime) {
-    // TODO: Implement this function
+    let start = toseconds(startTime);
+    let end = toseconds(endTime);
+    let startDelivery = toseconds("08:00:00 am");
+    let endDelivery = toseconds("10:00:00 pm");
+    let idle = 0;
+    if (start < startDelivery) {
+        idle += startDelivery - start;
+    }
+    if (end > endDelivery) {
+        idle += end - endDelivery;
+    }
+    let h = Math.floor(idle / 3600);
+    let m = Math.floor((idle % 3600) / 60);
+    let s = Math.floor(idle % 60);
+    return `${h}:${m}:${s}`;
 }
 
 // ============================================================
